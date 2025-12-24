@@ -1,0 +1,6 @@
+kafka:
+  client:
+    timeout-ms: 10000
+logging:
+  level:
+    com.aloievets.ai.mcp.kafka: debug
