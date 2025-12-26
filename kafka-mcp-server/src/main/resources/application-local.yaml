@@ -6,11 +6,12 @@ management:
         include: "*"
 # for local MCP Inspector
 mcp:
-  cors:
-    allowed-origin: "http://localhost:6274"
-    allowed-methods: GET, POST, OPTIONS
-    allowed-headers: "*"
-    allow-credentials: true
+  local:
+    cors:
+      allowed-origin: "http://localhost:6274"
+      allowed-methods: GET, POST, OPTIONS
+      allowed-headers: "*"
+      allow-credentials: true
 logging:
   level:
     com.aloievets.ai.mcp.kafka: debug
