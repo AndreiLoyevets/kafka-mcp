@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "my-kafka-mcp-server": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "mcp-remote",
+        "http://localhost:8080/sse"
+      ]
+    }
+  }
+}
