@@ -18,7 +18,7 @@ public class KafkaMcpServer {
         this.kafkaStatusViewer = kafkaStatusViewer;
     }
 
-    @McpTool(title = "List topics", description = "List Kafka topics in my cluster", generateOutputSchema = true)
+    @McpTool(title = "List topics", description = "List Kafka topics in my cluster")
     public Set<String> listTopics() {
         LOG.debug("Requested to list topics");
         return kafkaStatusViewer.listTopics();
