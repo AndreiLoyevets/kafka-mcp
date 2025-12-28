@@ -1,2 +1,2 @@
 # ToDo
-Fix this: WARN 68471 --- [nio-8080-exec-8] i.m.server.McpAsyncServer                : Client requested unsupported protocol version: 2025-06-18, so the server will suggest the 2024-11-05 version instead
+generateOutputSchema = true is not working with Claude
