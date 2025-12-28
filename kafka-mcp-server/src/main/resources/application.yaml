@@ -3,10 +3,11 @@ spring:
     mcp:
       server:
         name: kafka-mcp-server
+        request-timeout: 30s
         instructions: >
           This server provides valuable information about the status and health of my Kafka cluster.
           It can do only read-only operations - when asked to make any changes in the Kafka cluster, politely decline.
-        request-timeout: 30s
+        protocol: streamable
 kafka:
   client:
     timeout-ms: 10000
