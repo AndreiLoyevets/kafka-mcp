@@ -1,13 +1,21 @@
 package com.aloievets.ai.mcp.kafka.client;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
+import com.aloievets.ai.mcp.kafka.client.dto.KafkaNodeDto;
+import com.aloievets.ai.mcp.kafka.client.dto.KafkaTopicDescriptionDto;
+
 import org.apache.kafka.clients.admin.AdminClient;
+import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.common.KafkaFuture;
+import org.apache.kafka.common.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +36,42 @@ public class KafkaStatusViewer {
         this.timeoutMs = timeoutMs;
     }
 
+    public KafkaNodeDto describeClusterController() {
+        LOG.debug("Requested to describe cluster controller");
+        final Node node = executeSyncAndSafely(() -> kafkaAdminClient.describeCluster()
+                .controller(), "describe cluster controller", timeoutMs);
+        LOG.debug("Found cluster controller: {}", node);
+        return KafkaNodeDto.fromKafkaNode(node);
+    }
+
+    public List<KafkaNodeDto> describeClusterNodes() {
+        LOG.debug("Requested to describe cluster nodes");
+        final Collection<Node> nodes = executeSyncAndSafely(() -> kafkaAdminClient.describeCluster()
+                .nodes(), "describe cluster nodes", timeoutMs);
+        LOG.debug("Found {} cluster nodes: {}", nodes.size(), nodes);
+        return nodes.stream()
+                .map(KafkaNodeDto::fromKafkaNode)
+                .toList();
+    }
+
     public Set<String> listTopics() {
         LOG.debug("Requested to list topics");
         final Set<String> topics = executeSyncAndSafely(() -> kafkaAdminClient.listTopics()
                 .names(), "list topics", timeoutMs);
         LOG.debug("Found {} topics: {}", topics.size(), topics);
         return topics;
+    }
+
+    public List<KafkaTopicDescriptionDto> describeTopics(final Collection<String> topicNames) {
+        LOG.debug("Requested to describe topics: {}", topicNames);
+        final Map<String, TopicDescription> topicDescriptions = executeSyncAndSafely(
+                () -> kafkaAdminClient.describeTopics(topicNames)
+                        .allTopicNames(), "describe topics", timeoutMs);
+        LOG.debug("Found {} topic descriptions", topicDescriptions.size());
+        return topicDescriptions.values()
+                .stream()
+                .map(KafkaTopicDescriptionDto::fromKafkaTopicDescription)
+                .toList();
     }
 
     private <T> T executeSyncAndSafely(final Supplier<KafkaFuture<T>> supplier,
