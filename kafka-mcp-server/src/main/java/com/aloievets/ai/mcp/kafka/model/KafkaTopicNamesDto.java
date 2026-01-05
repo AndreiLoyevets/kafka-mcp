@@ -1,4 +1,4 @@
-package com.aloievets.ai.mcp.kafka.mcp.dto;
+package com.aloievets.ai.mcp.kafka.model;
 
 import java.util.Set;
 

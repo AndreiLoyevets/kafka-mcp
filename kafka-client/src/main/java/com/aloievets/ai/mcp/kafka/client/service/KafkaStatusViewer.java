@@ -1,4 +1,4 @@
-package com.aloievets.ai.mcp.kafka.client;
+package com.aloievets.ai.mcp.kafka.client.service;
 
 import java.util.Collection;
 import java.util.List;
@@ -9,8 +9,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.function.Supplier;
 
-import com.aloievets.ai.mcp.kafka.client.dto.KafkaNodeDto;
-import com.aloievets.ai.mcp.kafka.client.dto.KafkaTopicDescriptionDto;
+import com.aloievets.ai.mcp.kafka.client.model.KafkaNodeDto;
+import com.aloievets.ai.mcp.kafka.client.model.KafkaTopicDescriptionDto;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.TopicDescription;
@@ -18,20 +18,14 @@ import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.Node;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 
-@Component
 public class KafkaStatusViewer {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaStatusViewer.class);
     private static final String GENERIC_ERROR_TEMPLATE = "Failed to %s";
     private final AdminClient kafkaAdminClient;
     private final long timeoutMs;
 
-    @Autowired
-    public KafkaStatusViewer(final AdminClient kafkaAdminClient,
-            @Value("${kafka.client.timeout-ms}") final long timeoutMs) {
+    public KafkaStatusViewer(final AdminClient kafkaAdminClient, final long timeoutMs) {
         this.kafkaAdminClient = kafkaAdminClient;
         this.timeoutMs = timeoutMs;
     }

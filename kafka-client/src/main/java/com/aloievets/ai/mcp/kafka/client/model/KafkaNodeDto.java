@@ -1,4 +1,4 @@
-package com.aloievets.ai.mcp.kafka.client.dto;
+package com.aloievets.ai.mcp.kafka.client.model;
 
 import org.apache.kafka.common.Node;
 

@@ -1,6 +1,6 @@
-package com.aloievets.ai.mcp.kafka.client.dto;
+package com.aloievets.ai.mcp.kafka.client.model;
 
-import static com.aloievets.ai.mcp.kafka.client.dto.KafkaNodeDto.fromKafkaNode;
+import static com.aloievets.ai.mcp.kafka.client.model.KafkaNodeDto.fromKafkaNode;
 
 import java.util.Collections;
 import java.util.List;

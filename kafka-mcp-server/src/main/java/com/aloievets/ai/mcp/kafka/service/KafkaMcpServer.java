@@ -1,15 +1,15 @@
-package com.aloievets.ai.mcp.kafka.mcp;
+package com.aloievets.ai.mcp.kafka.service;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 
-import com.aloievets.ai.mcp.kafka.client.KafkaStatusViewer;
-import com.aloievets.ai.mcp.kafka.client.dto.KafkaNodeDto;
-import com.aloievets.ai.mcp.kafka.client.dto.KafkaTopicDescriptionDto;
-import com.aloievets.ai.mcp.kafka.mcp.dto.KafkaNodesDto;
-import com.aloievets.ai.mcp.kafka.mcp.dto.KafkaTopicDescriptionsDto;
-import com.aloievets.ai.mcp.kafka.mcp.dto.KafkaTopicNamesDto;
+import com.aloievets.ai.mcp.kafka.client.service.KafkaStatusViewer;
+import com.aloievets.ai.mcp.kafka.client.model.KafkaNodeDto;
+import com.aloievets.ai.mcp.kafka.client.model.KafkaTopicDescriptionDto;
+import com.aloievets.ai.mcp.kafka.model.KafkaNodesDto;
+import com.aloievets.ai.mcp.kafka.model.KafkaTopicDescriptionsDto;
+import com.aloievets.ai.mcp.kafka.model.KafkaTopicNamesDto;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

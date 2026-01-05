@@ -11,6 +11,7 @@
 
     <modules>
         <module>kafka-mcp-server</module>
+        <module>kafka-client</module>
     </modules>
 
     <properties>
@@ -35,6 +36,11 @@
                 <version>${spring-ai.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>com.aloievets.ai.mcp.kafka</groupId>
+                <artifactId>kafka-client</artifactId>
+                <version>${project.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

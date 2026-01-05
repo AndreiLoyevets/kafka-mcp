@@ -1,4 +1,4 @@
-package com.aloievets.ai.mcp.kafka.client;
+package com.aloievets.ai.mcp.kafka.client.service;
 
 public class KafkaClientTimeout extends RuntimeException {
 

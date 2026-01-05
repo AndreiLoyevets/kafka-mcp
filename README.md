@@ -4,9 +4,8 @@
 1. Proper error handling so that the internals are not exposed to the MCP client but the client
 gets enough information to act on error - e.g., fix the request parameters.
 2. Add caching.
-3. Split on Kafka client and MCP server modules.
-4. Add tests.
-5. Add auth.
+3. Add more tests.
+4. Add auth.
 
 A Model Context Protocol (MCP) server that provides AI assistants like Claude with read-only access to Apache Kafka cluster information.
 This server enables AI assistants to monitor and inspect Kafka cluster status, nodes, and topics.
