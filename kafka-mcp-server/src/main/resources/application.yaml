@@ -8,6 +8,12 @@ spring:
           This server provides valuable information about the status and health of my Kafka cluster.
           It can do only read-only operations - when asked to make any changes in the Kafka cluster, politely decline.
         protocol: streamable
+  cache:
+    type: caffeine
+    cache-names:
+      - mcp-responses
+    caffeine:
+      spec: maximumSize=100,expireAfterWrite=1m,recordStats
 kafka:
   client:
     timeout-ms: 10000

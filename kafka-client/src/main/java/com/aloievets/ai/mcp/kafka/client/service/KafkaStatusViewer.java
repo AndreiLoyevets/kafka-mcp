@@ -11,17 +11,22 @@ import java.util.function.Supplier;
 
 import com.aloievets.ai.mcp.kafka.client.model.KafkaNodeDto;
 import com.aloievets.ai.mcp.kafka.client.model.KafkaTopicDescriptionDto;
+import com.aloievets.ai.mcp.kafka.client.service.exceptions.KafkaClientException;
+import com.aloievets.ai.mcp.kafka.client.service.exceptions.KafkaClientTimeoutException;
+import com.aloievets.ai.mcp.kafka.client.service.exceptions.TopicsNotExistException;
 
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.TopicDescription;
 import org.apache.kafka.common.KafkaFuture;
 import org.apache.kafka.common.Node;
+import org.apache.kafka.common.errors.TopicAuthorizationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class KafkaStatusViewer {
     private static final Logger LOG = LoggerFactory.getLogger(KafkaStatusViewer.class);
     private static final String GENERIC_ERROR_TEMPLATE = "Failed to %s";
+    private static final String TOPICS_NOT_EXIST_ERROR_TEMPLATE = "Failed to connect to the following topics: %s";
     private final AdminClient kafkaAdminClient;
     private final long timeoutMs;
 
@@ -74,13 +79,25 @@ public class KafkaStatusViewer {
             return supplier.get()
                     .get(timeoutMs, TimeUnit.MILLISECONDS);
         } catch (final InterruptedException e) {
-            Thread.currentThread()
-                    .interrupt();
-            throw new RuntimeException(String.format(GENERIC_ERROR_TEMPLATE, commandDescription), e);
+            Thread.currentThread().interrupt();
+            final String message = String.format(GENERIC_ERROR_TEMPLATE, commandDescription);
+            LOG.error(message, e);
+            throw new KafkaClientException(message);
         } catch (final ExecutionException e) {
-            throw new RuntimeException(String.format(GENERIC_ERROR_TEMPLATE, commandDescription), e);
+            final Throwable cause = e.getCause();
+            if (cause instanceof final TopicAuthorizationException ex) {
+                final Set<String> unauthorizedTopics = ex.unauthorizedTopics();
+                final String message = String.format(TOPICS_NOT_EXIST_ERROR_TEMPLATE, unauthorizedTopics);
+                LOG.error(message, ex);
+                throw new TopicsNotExistException(unauthorizedTopics);
+            }
+            final String message = String.format(GENERIC_ERROR_TEMPLATE, commandDescription);
+            LOG.error(message, cause);
+            throw new KafkaClientException(message);
         } catch (final TimeoutException e) {
-            throw new KafkaClientTimeout(commandDescription, timeoutMs, e);
+            final String message = String.format("Timeout %s milliseconds elapsed while waiting for %s", timeoutMs, commandDescription);
+            LOG.warn(message, e);
+            throw new KafkaClientTimeoutException(commandDescription, timeoutMs);
         }
     }
 }
