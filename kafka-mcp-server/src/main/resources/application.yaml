@@ -14,6 +14,19 @@ spring:
       - mcp-responses
     caffeine:
       spec: maximumSize=100,expireAfterWrite=1m,recordStats
+  datasource:
+    url: jdbc:sqlite:mcp-history.db
+    driver-class-name: org.sqlite.JDBC
+    username: ""
+    password: ""
+  jpa:
+    database-platform: org.hibernate.community.dialect.SQLiteDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
 kafka:
   client:
     timeout-ms: 10000

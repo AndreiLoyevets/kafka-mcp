@@ -1,4 +1,4 @@
-package com.aloievets.ai.mcp.kafka.service.exceptions;
+package com.aloievets.ai.mcp.kafka.exceptions;
 
 public class GenericMcpException extends RuntimeException {
 

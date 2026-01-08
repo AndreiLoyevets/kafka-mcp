@@ -6,10 +6,10 @@ import java.util.List;
 import com.aloievets.ai.mcp.kafka.client.model.KafkaNodeDto;
 import com.aloievets.ai.mcp.kafka.client.model.KafkaTopicDescriptionDto;
 import com.aloievets.ai.mcp.kafka.client.service.KafkaStatusViewer;
+import com.aloievets.ai.mcp.kafka.exceptions.GenericMcpException;
 import com.aloievets.ai.mcp.kafka.model.KafkaNodesDto;
 import com.aloievets.ai.mcp.kafka.model.KafkaTopicDescriptionsDto;
 import com.aloievets.ai.mcp.kafka.model.KafkaTopicNamesDto;
-import com.aloievets.ai.mcp.kafka.service.exceptions.GenericMcpException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

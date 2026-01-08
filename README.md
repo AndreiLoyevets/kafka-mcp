@@ -1,9 +1,9 @@
 # Kafka MCP Server
 
 ## ToDo
-1. Add more tests.
-2. Add auth.
-3. Add memory to MCP?
+1. Delete old history on startup.
+2. Add more tests.
+3. Add auth.
 4. Update README.
 
 A Model Context Protocol (MCP) server that provides AI assistants like Claude with read-only access to Apache Kafka cluster information.
