@@ -1,17 +1,19 @@
-# for debugging
-management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
 # for local MCP Inspector
-mcp:
+kafka-mcp:
   local:
     cors:
       allowed-origin: "http://localhost:6274"
       allowed-methods: GET, POST, OPTIONS
       allowed-headers: "*"
       allow-credentials: true
+
+# for debugging
+management:
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+
 logging:
   level:
     com.aloievets.ai.mcp.kafka: debug

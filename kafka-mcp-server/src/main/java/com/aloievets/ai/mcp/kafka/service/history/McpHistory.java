@@ -14,6 +14,7 @@ public class McpHistory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    private String kafkaClusterName;
     private String toolName;
     private String jsonResponse;
     private Instant timestamp;
@@ -27,6 +28,14 @@ public class McpHistory {
 
     public void setId(final Long id) {
         this.id = id;
+    }
+
+    public String getKafkaClusterName() {
+        return kafkaClusterName;
+    }
+
+    public void setKafkaClusterName(final String kafkaClusterName) {
+        this.kafkaClusterName = kafkaClusterName;
     }
 
     public String getToolName() {

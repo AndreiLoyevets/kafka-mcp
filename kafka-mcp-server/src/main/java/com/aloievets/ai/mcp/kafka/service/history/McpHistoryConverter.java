@@ -8,16 +8,19 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 @Component
 public class McpHistoryConverter {
 	private static final Logger LOG = LoggerFactory.getLogger(McpHistoryConverter.class);
 	private final ObjectMapper objectMapper;
+	private final String kafkaClusterName;
 
-	public McpHistoryConverter(final ObjectMapper objectMapper) {
+	public McpHistoryConverter(final ObjectMapper objectMapper, @Value("${kafka-mcp.kafka.cluster.name}") final String kafkaClusterName) {
 		this.objectMapper = objectMapper;
-	}
+        this.kafkaClusterName = kafkaClusterName;
+    }
 
 	public <T> McpHistory toMcpHistory(final String toolName, final T responseDto) {
 		LOG.debug("Converting MCP response DTO to MCP history");
@@ -25,6 +28,7 @@ public class McpHistoryConverter {
 		try {
 			final String jsonResponse = objectMapper.writeValueAsString(responseDto);
 			final McpHistory history = new McpHistory();
+			history.setKafkaClusterName(kafkaClusterName);
 			history.setToolName(toolName);
 			history.setJsonResponse(jsonResponse);
 			history.setTimestamp(Instant.now());

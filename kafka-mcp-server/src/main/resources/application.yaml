@@ -1,3 +1,11 @@
+kafka-mcp:
+  kafka:
+    client:
+      timeout-ms: 10000
+  history:
+    days: 30
+    cleanup-enabled: true
+
 spring:
   ai:
     mcp:
@@ -6,6 +14,11 @@ spring:
         request-timeout: 30s
         instructions: >
           This server provides valuable information about the status and health of my Kafka cluster.
+          It can check the Kafka cluster nodes and individual topics.
+          It has access to historical states of the Kafka cluster and topics, exposed via tools.
+          When detecting problems with any part of the Kafka cluster - compare the state with the historical values,
+          and recommend the fixes.
+          After the problems and recommended fixes are identified - suggest saving a short summary for the future reference, after user's consent.
           It can do only read-only operations - when asked to make any changes in the Kafka cluster, politely decline.
         protocol: streamable
   cache:
@@ -27,6 +40,3 @@ spring:
     properties:
       hibernate:
         format_sql: true
-kafka:
-  client:
-    timeout-ms: 10000

@@ -20,7 +20,7 @@ public class KafkaConfig {
 
     @Bean
     public KafkaStatusViewer kafkaStatusViewer(final AdminClient kafkaAdminClient,
-            @Value("${kafka.client.timeout-ms}") final long timeoutMs) {
+            @Value("${kafka-mcp.kafka.client.timeout-ms}") final long timeoutMs) {
         return new KafkaStatusViewer(kafkaAdminClient, timeoutMs);
     }
 }

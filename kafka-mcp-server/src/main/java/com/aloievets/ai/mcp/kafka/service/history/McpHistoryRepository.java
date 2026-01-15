@@ -9,5 +9,7 @@ import java.util.List;
 @Repository
 public interface McpHistoryRepository extends JpaRepository<McpHistory, Long> {
 
-    List<McpHistory> findByTimestampBetween(final Instant start, final Instant end);
+    List<McpHistory> findByToolNameAndTimestampBetween(final String toolName, final Instant start, final Instant end);
+
+    void deleteAllByTimestampBefore(final Instant timestamp);
 }

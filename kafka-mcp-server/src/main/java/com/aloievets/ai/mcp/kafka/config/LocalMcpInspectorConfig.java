@@ -15,10 +15,10 @@ import org.springframework.web.filter.CorsFilter;
 public class LocalMcpInspectorConfig {
 
     @Bean
-    public CorsFilter corsFilter(@Value("${mcp.local.cors.allowed-origin}") final String allowedOrigin,
-            @Value("${mcp.local.cors.allowed-methods}") final String[] allowedMethods,
-            @Value("${mcp.local.cors.allowed-headers}") final String allowedHeaders,
-            @Value("${mcp.local.cors.allow-credentials}") final boolean allowCredentials) {
+    public CorsFilter corsFilter(@Value("${kafka-mcp.local.cors.allowed-origin}") final String allowedOrigin,
+            @Value("${kafka-mcp.local.cors.allowed-methods}") final String[] allowedMethods,
+            @Value("${kafka-mcp.local.cors.allowed-headers}") final String allowedHeaders,
+            @Value("${kafka-mcp.local.cors.allow-credentials}") final boolean allowCredentials) {
         final UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         final CorsConfiguration config = new CorsConfiguration();
         config.addAllowedOrigin(allowedOrigin);

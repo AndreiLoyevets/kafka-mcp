@@ -15,7 +15,7 @@ public class KafkaTerraformConfigReader {
     private final ResourceLoader resourceLoader;
 
     public KafkaTerraformConfigReader(
-            @Value("${kafka.cluster.name}") final String kafkaClusterName,
+            @Value("${kafka-mcp.kafka.cluster.name}") final String kafkaClusterName,
             final ResourceLoader resourceLoader) {
         this.kafkaClusterName = kafkaClusterName;
         this.resourceLoader = resourceLoader;

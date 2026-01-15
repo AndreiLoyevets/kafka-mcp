@@ -1,10 +1,16 @@
 package com.aloievets.ai.mcp.kafka.service;
 
-import static com.aloievets.ai.mcp.kafka.service.McpTestUtils.assertTextMcpResult;
-import static org.mockito.ArgumentMatchers.any;
+import static com.aloievets.ai.mcp.kafka.service.McpTestUtils.assertTextMcpToolResult;
+import static com.aloievets.ai.mcp.kafka.service.McpTestUtils.assertTextMcpResourceResult;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.time.Instant;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -12,6 +18,10 @@ import com.aloievets.ai.mcp.kafka.client.model.KafkaNodeDto;
 import com.aloievets.ai.mcp.kafka.client.model.KafkaTopicDescriptionDto;
 import com.aloievets.ai.mcp.kafka.client.model.KafkaTopicPartitionInfoDto;
 import com.aloievets.ai.mcp.kafka.client.service.KafkaStatusViewer;
+import com.aloievets.ai.mcp.kafka.model.KafkaRecommendationsSummaryDto;
+import com.aloievets.ai.mcp.kafka.service.history.McpHistory;
+import com.aloievets.ai.mcp.kafka.service.history.McpHistoryConverter;
+import com.aloievets.ai.mcp.kafka.service.history.McpHistoryRepository;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,16 +36,22 @@ import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
 import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
+import io.modelcontextprotocol.spec.McpSchema.ReadResourceRequest;
+import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT,
-        properties = {
-                "spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.kafka.KafkaAutoConfiguration"})
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("mcp-test")
 public class KafkaMcpServerTest {
     @LocalServerPort
     private int port;
     @MockitoBean
     private KafkaStatusViewer kafkaStatusViewer;
+    @MockitoBean
+    private McpHistoryConverter historyConverter;
+    @MockitoBean
+    private McpHistoryRepository historyRepository;
+    @MockitoBean
+    private KafkaTerraformConfigReader terraformConfigReader;
     private McpSyncClient mcpClient;
 
     @BeforeEach
@@ -64,7 +80,7 @@ public class KafkaMcpServerTest {
                 .name("listTopics")
                 .build());
 
-        assertTextMcpResult(expectedText, result);
+        assertTextMcpToolResult(expectedText, result);
     }
 
     @Test
@@ -77,7 +93,7 @@ public class KafkaMcpServerTest {
                 .name("describeClusterController")
                 .build());
 
-        assertTextMcpResult(expectedText, result);
+        assertTextMcpToolResult(expectedText, result);
     }
 
     @Test
@@ -91,7 +107,7 @@ public class KafkaMcpServerTest {
                 .name("describeClusterNodes")
                 .build());
 
-        assertTextMcpResult(expectedText, result);
+        assertTextMcpToolResult(expectedText, result);
     }
 
     @Test
@@ -116,7 +132,8 @@ public class KafkaMcpServerTest {
                 topic2, false, List.of(partitionInfo3, partitionInfo4), "topic2-id-456");
         final List<KafkaTopicDescriptionDto> topicDescriptions = List.of(topicDescription1, topicDescription2);
 
-        when(kafkaStatusViewer.describeTopics(any())).thenReturn(topicDescriptions);
+        when(kafkaStatusViewer.describeTopics(List.of(topic1, topic2))).thenReturn(topicDescriptions);
+
         final String expectedText = """
                 {"topicDescriptions":[\
                 {"name":"test-topic1","internal":false,"partitions":[\
@@ -179,9 +196,95 @@ public class KafkaMcpServerTest {
 
         final CallToolResult result = mcpClient.callTool(CallToolRequest.builder()
                 .name("describeTopics")
-                .arguments(java.util.Map.of("topicNames", List.of(topic1, topic2)))
+                .arguments(Map.of("topicNames", List.of(topic1, topic2)))
                 .build());
 
-        assertTextMcpResult(expectedText, result);
+        assertTextMcpToolResult(expectedText, result);
+        verify(kafkaStatusViewer).describeTopics(List.of(topic1, topic2));
+        verifyNoMoreInteractions(kafkaStatusViewer);
+    }
+
+    @Test
+    void getHistoricalMcpResponses() {
+        final String historicalMcpTool = "listTopics";
+        final String startDate = "2026-01-01";
+        final String endDate = "2026-01-31";
+        final Instant startDateInstant = Instant.parse(startDate + "T00:00:00Z");
+        final Instant endDateInstant = Instant.parse(endDate + "T00:00:00Z");
+
+        final McpHistory history1 = new McpHistory();
+        history1.setId(1L);
+        history1.setKafkaClusterName("testCluster");
+        history1.setToolName("listTopics");
+        history1.setJsonResponse("{\"topicNames\":[\"topic1\",\"topic2\"]}");
+        history1.setTimestamp(startDateInstant);
+
+        final McpHistory history2 = new McpHistory();
+        history2.setId(2L);
+        history2.setKafkaClusterName("testCluster");
+        history2.setToolName("listTopics");
+        history2.setJsonResponse("{\"topicNames\":[\"topic1\",\"topic3\"]}");
+        history2.setTimestamp(endDateInstant);
+
+        when(historyRepository.findByToolNameAndTimestampBetween(historicalMcpTool, startDateInstant, endDateInstant))
+                .thenReturn(List.of(history1, history2));
+
+        final String expectedText = """
+                [{"id":1,"kafkaClusterName":"testCluster","toolName":"listTopics","jsonResponse":"{\\"topicNames\\":\
+                [\\"topic1\\",\\"topic2\\"]}","timestamp":"2026-01-01T00:00:00Z"},{"id":2,"kafkaClusterName":"testCluster",\
+                "toolName":"listTopics","jsonResponse":"{\\"topicNames\\":[\\"topic1\\",\\"topic3\\"]}","timestamp":"2026-01-31T00:00:00Z"}]\
+                """;
+
+        final CallToolResult result = mcpClient.callTool(CallToolRequest.builder()
+                .name("getHistoricalMcpResponses")
+                .arguments(Map.of("mcpTool", historicalMcpTool, "startDate", startDate, "endDate", endDate))
+                .build());
+
+        assertTextMcpToolResult(expectedText, result);
+        verify(historyRepository).findByToolNameAndTimestampBetween(historicalMcpTool, startDateInstant, endDateInstant);
+        verifyNoMoreInteractions(historyRepository);
+    }
+
+    @Test
+    void saveProblemsAndRecommendationsSummary() {
+        final String summaryKey = "problemsAndRecommendationsSummary";
+        final String summary = "This is a test summary of problems and recommendations from Claude";
+        final var summaryDto = new KafkaRecommendationsSummaryDto(summary);
+        final var history = new McpHistory();
+        history.setId(1L);
+        history.setKafkaClusterName("testCluster");
+        history.setToolName(summaryKey);
+        history.setJsonResponse("{\"summary\":\"" + summary + "\"}");
+        history.setTimestamp(Instant.now());
+
+        when(historyConverter.toMcpHistory(summaryKey, summaryDto)).thenReturn(history);
+
+        final CallToolResult result = mcpClient.callTool(CallToolRequest.builder()
+                .name("saveProblemsAndRecommendationsSummary")
+                .arguments(Map.of("summary", summary))
+                .build());
+
+        assertFalse(result.isError());
+        verify(historyConverter).toMcpHistory(summaryKey, summaryDto);
+        verify(historyRepository).save(history);
+        verifyNoMoreInteractions(historyConverter, historyRepository);
+    }
+
+    @Test
+    void getKafkaTerraformConfig() throws IOException {
+        final String resourceUri = "file://mcp/kafka-terraform.yaml";
+        final String kafkaTestConfig = """
+                kafka:
+                    clusterName: test-cluster
+                    version: 3.4.0
+                    multiAZdeployment: false\
+                """;
+        when(terraformConfigReader.getKafkaTerraformConfig()).thenReturn(kafkaTestConfig);
+
+        final ReadResourceResult result = mcpClient.readResource(new ReadResourceRequest(resourceUri));
+
+        assertTextMcpResourceResult(resourceUri, kafkaTestConfig, result);
+        verify(terraformConfigReader).getKafkaTerraformConfig();
+        verifyNoMoreInteractions(terraformConfigReader);
     }
 }
