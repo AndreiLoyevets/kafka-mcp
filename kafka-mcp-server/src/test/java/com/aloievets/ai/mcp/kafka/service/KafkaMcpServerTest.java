@@ -1,36 +1,24 @@
 package com.aloievets.ai.mcp.kafka.service;
 
-import static com.aloievets.ai.mcp.kafka.service.McpTestUtils.assertTextMcpToolResult;
 import static com.aloievets.ai.mcp.kafka.service.McpTestUtils.assertTextMcpResourceResult;
+import static com.aloievets.ai.mcp.kafka.service.McpTestUtils.assertTextMcpToolResult;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
-
-import java.io.IOException;
-import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
 
 import com.aloievets.ai.mcp.kafka.client.model.KafkaNodeDto;
 import com.aloievets.ai.mcp.kafka.client.model.KafkaTopicDescriptionDto;
 import com.aloievets.ai.mcp.kafka.client.model.KafkaTopicPartitionInfoDto;
 import com.aloievets.ai.mcp.kafka.client.service.KafkaStatusViewer;
+import com.aloievets.ai.mcp.kafka.model.KafkaNodesDto;
 import com.aloievets.ai.mcp.kafka.model.KafkaRecommendationsSummaryDto;
+import com.aloievets.ai.mcp.kafka.model.KafkaTopicDescriptionsDto;
+import com.aloievets.ai.mcp.kafka.model.KafkaTopicNamesDto;
 import com.aloievets.ai.mcp.kafka.service.history.McpHistory;
 import com.aloievets.ai.mcp.kafka.service.history.McpHistoryConverter;
 import com.aloievets.ai.mcp.kafka.service.history.McpHistoryRepository;
-
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.server.LocalServerPort;
-import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.bean.override.mockito.MockitoBean;
-
 import io.modelcontextprotocol.client.McpClient;
 import io.modelcontextprotocol.client.McpSyncClient;
 import io.modelcontextprotocol.client.transport.HttpClientStreamableHttpTransport;
@@ -38,6 +26,19 @@ import io.modelcontextprotocol.spec.McpSchema.CallToolRequest;
 import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.ReadResourceRequest;
 import io.modelcontextprotocol.spec.McpSchema.ReadResourceResult;
+import java.io.IOException;
+import java.time.Instant;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("mcp-test")
@@ -75,12 +76,19 @@ public class KafkaMcpServerTest {
         topics.add("topic2");
         when(kafkaStatusViewer.listTopics()).thenReturn(topics);
         final String expectedText = "{\"topicNames\":[\"topic1\",\"topic2\"]}";
+        final var expectedDto = new KafkaTopicNamesDto(topics);
+        final var mcpHistory = new McpHistory();
+        mcpHistory.setId(1L);
+        mcpHistory.setToolName("listTopics");
+        when(historyConverter.toMcpHistory(eq("listTopics"), eq(expectedDto))).thenReturn(mcpHistory);
 
         final CallToolResult result = mcpClient.callTool(CallToolRequest.builder()
                 .name("listTopics")
                 .build());
 
         assertTextMcpToolResult(expectedText, result);
+        verify(historyConverter).toMcpHistory(eq("listTopics"), eq(expectedDto));
+        verify(historyRepository).save(mcpHistory);
     }
 
     @Test
@@ -88,26 +96,40 @@ public class KafkaMcpServerTest {
         final KafkaNodeDto controllerNode = new KafkaNodeDto(1, "1", "localhost", 9092, "rack1");
         when(kafkaStatusViewer.describeClusterController()).thenReturn(controllerNode);
         final String expectedText = "{\"id\":1,\"idString\":\"1\",\"host\":\"localhost\",\"port\":9092,\"rack\":\"rack1\"}";
+        final var mcpHistory = new McpHistory();
+        mcpHistory.setId(2L);
+        mcpHistory.setToolName("describeClusterController");
+        when(historyConverter.toMcpHistory(eq("describeClusterController"), eq(controllerNode))).thenReturn(mcpHistory);
 
         final CallToolResult result = mcpClient.callTool(CallToolRequest.builder()
                 .name("describeClusterController")
                 .build());
 
         assertTextMcpToolResult(expectedText, result);
+        verify(historyConverter).toMcpHistory(eq("describeClusterController"), eq(controllerNode));
+        verify(historyRepository).save(mcpHistory);
     }
 
     @Test
     void describeClusterNodes() {
         final KafkaNodeDto node1 = new KafkaNodeDto(1, "1", "localhost", 9092, "rack1");
         final KafkaNodeDto node2 = new KafkaNodeDto(2, "2", "localhost", 9093, "rack2");
-        when(kafkaStatusViewer.describeClusterNodes()).thenReturn(List.of(node1, node2));
+        final List<KafkaNodeDto> nodes = List.of(node1, node2);
+        when(kafkaStatusViewer.describeClusterNodes()).thenReturn(nodes);
         final String expectedText = "{\"nodes\":[{\"id\":1,\"idString\":\"1\",\"host\":\"localhost\",\"port\":9092,\"rack\":\"rack1\"},{\"id\":2,\"idString\":\"2\",\"host\":\"localhost\",\"port\":9093,\"rack\":\"rack2\"}]}";
+        final var expectedDto = new KafkaNodesDto(nodes);
+        final var mcpHistory = new McpHistory();
+        mcpHistory.setId(3L);
+        mcpHistory.setToolName("describeClusterNodes");
+        when(historyConverter.toMcpHistory(eq("describeClusterNodes"), eq(expectedDto))).thenReturn(mcpHistory);
 
         final CallToolResult result = mcpClient.callTool(CallToolRequest.builder()
                 .name("describeClusterNodes")
                 .build());
 
         assertTextMcpToolResult(expectedText, result);
+        verify(historyConverter).toMcpHistory(eq("describeClusterNodes"), eq(expectedDto));
+        verify(historyRepository).save(mcpHistory);
     }
 
     @Test
@@ -193,6 +215,11 @@ public class KafkaMcpServerTest {
                 {"id":3,"idString":"3","host":"localhost","port":9093,"rack":"rack3"}]}],\
                 "topicId":"topic2-id-456"}]}\
                 """;
+        final var expectedDto = new KafkaTopicDescriptionsDto(topicDescriptions);
+        final var mcpHistory = new McpHistory();
+        mcpHistory.setId(5L);
+        mcpHistory.setToolName("describeTopics");
+        when(historyConverter.toMcpHistory(eq("describeTopics"), eq(expectedDto))).thenReturn(mcpHistory);
 
         final CallToolResult result = mcpClient.callTool(CallToolRequest.builder()
                 .name("describeTopics")
@@ -201,7 +228,9 @@ public class KafkaMcpServerTest {
 
         assertTextMcpToolResult(expectedText, result);
         verify(kafkaStatusViewer).describeTopics(List.of(topic1, topic2));
-        verifyNoMoreInteractions(kafkaStatusViewer);
+        verify(historyConverter).toMcpHistory(eq("describeTopics"), eq(expectedDto));
+        verify(historyRepository).save(mcpHistory);
+        verifyNoMoreInteractions(kafkaStatusViewer, historyConverter, historyRepository);
     }
 
     @Test
@@ -285,6 +314,6 @@ public class KafkaMcpServerTest {
 
         assertTextMcpResourceResult(resourceUri, kafkaTestConfig, result);
         verify(terraformConfigReader).getKafkaTerraformConfig();
-        verifyNoMoreInteractions(terraformConfigReader);
+        verifyNoMoreInteractions(terraformConfigReader, historyConverter, historyRepository);
     }
 }
