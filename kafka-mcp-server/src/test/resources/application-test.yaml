@@ -1,0 +1,6 @@
+kafka-mcp:
+  kafka:
+    cluster:
+      name: testCluster
+  history:
+    cleanup-enabled: false
