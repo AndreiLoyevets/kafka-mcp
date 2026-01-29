@@ -145,10 +145,6 @@ public class KafkaMcpServerIntegrationTest {
                 .replaceAll("\\$port", String.valueOf(kafkaPort))
                 .replaceAll("\\$topic1Id", topic1Id)
                 .replaceAll("\\$topic2Id", topic2Id);
-//        final String expectedText = "{\"topicDescriptions\":[{\"name\":\"topic1\",\"internal\":false,\"partitions\":[{\"partition\":0,\"partitionLeader\":{\"id\":1,\"idString\":\"1\",\"host\":\"localhost\",\"port\":$port,\"rack\":\"UNKNOWN\"},\"partitionReplicas\":[{\"id\":1,\"idString\":\"1\",\"host\":\"localhost\",\"port\":$port,\"rack\":\"UNKNOWN\"}],\"inSyncReplicas\":[{\"id\":1,\"idString\":\"1\",\"host\":\"localhost\",\"port\":$port,\"rack\":\"UNKNOWN\"}],\"eligibleLeaderReplicas\":[],\"lastKnownEligibleLeaderReplicas\":[]}],\"topicId\":\"$topic1Id\"},{\"name\":\"topic2\",\"internal\":false,\"partitions\":[{\"partition\":0,\"partitionLeader\":{\"id\":1,\"idString\":\"1\",\"host\":\"localhost\",\"port\":$port,\"rack\":\"UNKNOWN\"},\"partitionReplicas\":[{\"id\":1,\"idString\":\"1\",\"host\":\"localhost\",\"port\":$port,\"rack\":\"UNKNOWN\"}],\"inSyncReplicas\":[{\"id\":1,\"idString\":\"1\",\"host\":\"localhost\",\"port\":$port,\"rack\":\"UNKNOWN\"}],\"eligibleLeaderReplicas\":[],\"lastKnownEligibleLeaderReplicas\":[]}],\"topicId\":\"$topic2Id\"}]}"
-//                .replaceAll("\\$port", String.valueOf(kafkaPort))
-//                .replaceAll("\\$topic1Id", topic1Id)
-//                .replaceAll("\\$topic2Id", topic2Id);
 
         final CallToolResult result = mcpClient.callTool(CallToolRequest.builder()
                 .name("describeTopics")

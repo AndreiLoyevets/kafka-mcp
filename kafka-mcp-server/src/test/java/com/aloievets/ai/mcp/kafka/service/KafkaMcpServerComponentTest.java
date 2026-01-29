@@ -42,7 +42,7 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("mcp-test")
-public class KafkaMcpServerTest {
+public class KafkaMcpServerComponentTest {
     @LocalServerPort
     private int port;
     @MockitoBean
